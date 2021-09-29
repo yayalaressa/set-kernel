@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# kernel setup
+# by Yaya Laressa
+
+# Check if script is run by root.
+if [ "$(id -u)" -ne 0 ] ; then
+    echo 'This script must be run as root or with the sudo command.'
+    exit 1
+fi
+
+# Low latency function.
+lowlatency () {
+LOW=/etc/grub.d/09_lowlatency
+if [ -f "$LOW" ]; then
+    echo 'Low latency was actived.'
+    exit 0
+else 
+    mv 09_lowlatency /etc/grub.d/09_lowlatency
+    chmod +x /etc/grub.d/09_lowlatency
+    chmod -x /etc/grub.d/10_linux
+    update-grub
+    echo 'Reboot OS now.'
+    reboot
+    exit 0
+fi
+}
+
+# Generic function.
+generic () {
+LOW=/etc/grub.d/09_lowlatency
+if [ -f "$LOW" ]; then
+    mv /etc/grub.d/09_lowlatency 09_lowlatency
+    chmod +x /etc/grub.d/10_linux
+    update-grub
+    echo 'Reboot OS now.'
+    reboot
+    exit 0
+else 
+    echo 'Generic was actived.'
+    exit 0
+fi
+}
+
+# No command function
+nocommand () {
+echo 'No command found.'
+}
+
+# Low latency primary boot.
+[ "$1" == "--low-latency" ] && lowlatency
+
+# Generic primary boot.
+[ "$1" == "--generic" ] && generic
+
+# No command found.
+[ "$1" == "" ] && nocommand
+
